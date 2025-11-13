@@ -195,13 +195,25 @@ const storage = {
   }
 };
 
-// Get week number
+// Get week number (Monday-Sunday, resets Monday 4am)
 function getWeekNumber() {
   const now = new Date();
-  const start = new Date(now.getFullYear(), 0, 1);
-  const diff = now - start;
-  const oneWeek = 1000 * 60 * 60 * 24 * 7;
-  return Math.floor(diff / oneWeek);
+  
+  // Adjust for Monday start and 4am reset
+  const adjusted = new Date(now);
+  adjusted.setHours(adjusted.getHours() - 4); // Subtract 4 hours
+  
+  // Get Monday of this week
+  const dayOfWeek = adjusted.getDay();
+  const diff = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days, else go to Monday
+  const monday = new Date(adjusted);
+  monday.setDate(adjusted.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  
+  // Calculate week number from start of year
+  const start = new Date(monday.getFullYear(), 0, 1);
+  const weekNum = Math.floor((monday - start) / (1000 * 60 * 60 * 24 * 7));
+  return weekNum;
 }
 
 // Load saved state
@@ -758,6 +770,8 @@ function renderDashboard() {
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const dayName = dayNames[now.getDay()];
   const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const dayKeysOrdered = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+  const dayNamesOrdered = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
   const henryProg = getProgress('henry');
   const sophieProg = getProgress('sophie');
@@ -773,9 +787,9 @@ function renderDashboard() {
             <div class="text-gray-600 text-3xl mb-4">${dayNames[dayKeys.indexOf(state.currentDay)]}</div>
             
             <div class="day-selector mt-4">
-              ${dayKeys.map((day, idx) => `
+              ${dayKeysOrdered.map((day, idx) => `
                 <button onclick="changeDay('${day}')" class="day-btn ${state.currentDay === day ? 'active' : ''}">
-                  ${dayNames[idx].substring(0, 3)}
+                  ${dayNamesOrdered[idx].substring(0, 3)}
                 </button>
               `).join('')}
             </div>
