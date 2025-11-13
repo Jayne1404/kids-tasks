@@ -179,6 +179,59 @@ function getCurrentDay() {
   return days[new Date().getDay()];
 }
 
+// Safe localStorage wrapper
+const storage = {
+  get: function(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch(e) {
+      return null;
+    }
+  },
+  set: function(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch(e) {}
+  }
+};
+
+// Get week number
+function getWeekNumber() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  const oneWeek = 1000 * 60 * 60 * 24 * 7;
+  return Math.floor(diff / oneWeek);
+}
+
+// Load saved state
+function loadState() {
+  const saved = storage.get('kidsPlanner');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      const savedWeek = parsed.weekNumber;
+      const currentWeek = getWeekNumber();
+      if (savedWeek === currentWeek) {
+        return parsed;
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
+// Save state
+function saveState() {
+  const toSave = {
+    weekNumber: getWeekNumber(),
+    points: state.points,
+    tasks: state.tasks
+  };
+  storage.set('kidsPlanner', JSON.stringify(toSave));
+}
+
+const savedState = loadState();
+
 // State
 let state = {
   view: 'dashboard',
@@ -187,7 +240,7 @@ let state = {
   mollyPerson: null,
   mollyPeriod: null,
   mollyTaskId: null,
-  points: {
+  points: savedState ? savedState.points : {
     henry: 0,
     sophie: 0
   },
@@ -212,7 +265,7 @@ let state = {
   },
 
   // All tasks for all days
-  tasks: {
+  tasks: savedState ? savedState.tasks : {
     monday: {
       henry: {
         morning: [
@@ -657,6 +710,7 @@ function toggleTask(person, period, taskId, event) {
     } else {
       state.points[person] -= task.points;
     }
+    saveState();
     render();
   }
 }
@@ -682,6 +736,7 @@ function toggleMollyItem(item) {
     if (task && !task.done) {
       task.done = true;
       state.points[state.mollyPerson] += task.points;
+      saveState();
       setTimeout(() => {
         state.showMollyModal = false;
         state.mollyChecklist = { dryFood: false, wetFood: false, water: false, medication: false };
@@ -808,7 +863,7 @@ function renderHenry() {
           </div>
         </div>
 
-        ${countdownMinutes && countdownMinutes <= 120 && !showChoices ? `
+        ${countdownMinutes && countdownMinutes <= 120 && countdownMinutes >= -60 && !showChoices ? `
           <div class="rounded-2xl shadow-lg p-6 mb-6 ${countdownColor}">
             <div class="text-center">
               <div class="text-6xl mb-3">${timeUntil ? '🚗' : '🌙'}</div>
@@ -938,7 +993,7 @@ function renderSophie() {
           </div>
         </div>
 
-        ${countdownMinutes && countdownMinutes <= 120 && !showChoices ? `
+        ${countdownMinutes && countdownMinutes <= 120 && countdownMinutes >= -60 && !showChoices ? `
           <div class="rounded-3xl shadow-lg p-8 mb-6 ${countdownColor}">
             <div class="text-center">
               <div class="text-8xl mb-4">${timeUntil ? '🚗' : '🌙'}</div>
