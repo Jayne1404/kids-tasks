@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kids Family Planner</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; }
+.min-h-screen { min-height: 100vh; }
+.p-4 { padding: 1rem; }
+.p-6 { padding: 1.5rem; }
+.mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+.mt-2 { margin-top: 0.5rem; }
+.gap-6 { gap: 1.5rem; }
+.rounded-xl { border-radius: 0.75rem; }
+.rounded-2xl { border-radius: 1rem; }
+.rounded-3xl { border-radius: 1.5rem; }
+.shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.font-bold { font-weight: 700; }
+.flex { display: flex; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.grid { display: grid; }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.space-y-3 > * + * { margin-top: 0.75rem; }
+.bg-white { background-color: white; }
+.text-gray-600 { color: #4b5563; }
+.text-gray-800 { color: #1f2937; }
+.overflow-hidden { overflow: hidden; }
+.transition-all { transition: all 0.3s; }
+.cursor-pointer { cursor: pointer; }
+.bg-gradient-purple { background: linear-gradient(135deg, #faf5ff 0%, #fce7f3 100%); }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+.text-3xl { font-size: 1.875rem; }
+.text-4xl { font-size: 2.25rem; }
+.text-5xl { font-size: 3rem; }
+.text-6xl { font-size: 3.75rem; }
+.text-7xl { font-size: 4.5rem; }
+.text-8xl { font-size: 6rem; }
+.max-w-4xl { max-width: 56rem; margin: 0 auto; }
+.max-w-5xl { max-width: 64rem; margin: 0 auto; }
+.hidden { display: none !important; }
+
+/* Countdown colors */
+.countdown-green { background-color: #d1fae5; border: 4px solid #10b981; }
+.countdown-orange { background-color: #fed7aa; border: 4px solid #f97316; }
+.countdown-red { background-color: #fecaca; border: 4px solid #ef4444; }
+.countdown-past { background-color: #991b1b; border: 4px solid #7f1d1d; color: white; }
+.text-green { color: #059669; }
+.text-orange { color: #ea580c; }
+.text-red { color: #dc2626; }
+
+/* Task states */
+.task-btn { width: 100%; padding: 1.25rem; border-radius: 0.75rem; display: flex; align-items: center; gap: 1rem; transition: all 0.3s; cursor: pointer; border: none; text-align: left; background-color: #f9fafb; border: 2px solid #e5e7eb; font-size: 1.25rem; }
+.task-btn:hover { transform: translateX(5px); background-color: #f3f4f6; }
+.task-btn.done { background-color: #dcfce7; border-color: #22c55e; }
+.task-btn.overdue { background-color: #fee2e2; border-color: #ef4444; }
+.task-btn.overdue:not(.done) { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+/* Day selector */
+.day-selector {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.day-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 3px solid #9333ea;
+  background: white;
+  color: #9333ea;
+  font-size: 1.125rem;
+  transition: all 0.3s;
+}
+.day-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.day-btn.active {
+  background: #9333ea;
+  color: white;
+}
+
+/* Animations */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .7; } }
+@keyframes firework {
+  0% { opacity: 1; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+.firework {
+  position: fixed;
+  pointer-events: none;
+  font-size: 3rem;
+  animation: firework 0.8s ease-out;
+  z-index: 9999;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.modal-content {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Progress bar */
+.progress-bar { height: 100%; transition: width 0.5s ease; border-radius: 9999px; }
+.progress-green { background: linear-gradient(90deg, #4ade80 0%, #16a34a 100%); }
+.progress-purple { background: linear-gradient(90deg, #c084fc 0%, #a855f7 100%); }
+
+.card-hover:hover { transform: scale(1.05); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+.points-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  border-radius: 9999px;
+  color: white;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+.btn { padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 700; cursor: pointer; border: none; font-size: 1.125rem; transition: all 0.3s; }
+.btn:hover { transform: translateY(-2px); }
+
+/* Choice buttons */
+.choice-btn {
+  padding: 2rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: center;
+}
+.choice-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+
+<script>
+// Get current day
+function getCurrentDay() {
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  return days[new Date().getDay()];
+}
+
+// State
+let state = {
+  view: 'dashboard',
+  currentDay: getCurrentDay(),
+  showMollyModal: false,
+  mollyPerson: null,
+  mollyPeriod: null,
+  mollyTaskId: null,
+  points: {
+    henry: 0,
+    sophie: 0
+  },
+  
+  // Schedule for each day
+  schedule: {
+    monday: { henry: '8:00', sophie: '8:00' },
+    tuesday: { henry: '8:00', sophie: '8:00' },
+    wednesday: { henry: '8:00', sophie: '8:00' },
+    thursday: { henry: '8:20', sophie: '7:30' },
+    friday: { henry: '8:20', sophie: '7:30' },
+    saturday: { henry: '10:00', sophie: '10:00' },
+    sunday: { henry: null, sophie: null }
+  },
+
+  // Molly checklist
+  mollyChecklist: {
+    dryFood: false,
+    wetFood: false,
+    water: false,
+    medication: false
+  },
+
+  // All tasks for all days
+  tasks: {
+    monday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 5 },
+          { id: 2, text: 'Shower', emoji: '🚿', done: false, points: 5 },
+          { id: 3, text: 'Towel Back', emoji: '🧺', done: false, points: 5 },
+          { id: 4, text: 'Uniform', emoji: '👕', done: false, points: 5 },
+          { id: 5, text: 'Breakfast', emoji: '🍞', done: false, points: 5 },
+          { id: 6, text: 'Dishes Away', emoji: '🥣', done: false, points: 5 },
+          { id: 7, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 8, text: 'Make Bed', emoji: '🛏️', done: false, points: 5 },
+          { id: 9, text: 'Reader', emoji: '📖', done: false, points: 5 },
+          { id: 10, text: 'Pack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 11, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ],
+        evening: [
+          { id: 12, text: 'Unpack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 13, text: 'Dressed', emoji: '🧦', done: false, points: 5 },
+          { id: 14, text: 'Clothes in drawer', emoji: '👕', done: false, points: 5 },
+          { id: 15, text: 'Bag away', emoji: '🪝', done: false, points: 5 },
+          { id: 16, text: 'Lunch', emoji: '🥪', done: false, points: 5 },
+          { id: 17, text: 'Basket away', emoji: '🧺', done: false, points: 5 },
+          { id: 18, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 5 },
+          { id: 19, text: 'Dinner', emoji: '🍽️', done: false, points: 5 },
+          { id: 20, text: 'Clear table', emoji: '🍴', done: false, points: 5 },
+          { id: 21, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 10 },
+          { id: 2, emoji: '👗', label: 'Get dressed', done: false, points: 10 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 10 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 10 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 10 },
+          { id: 6, emoji: '🎒', label: 'Pack bag', done: false, points: 10 },
+          { id: 7, emoji: '🦷', label: 'Teeth', done: false, points: 10 }
+        ],
+        evening: [
+          { id: 8, emoji: '🎒', label: 'Unpack bag', done: false, points: 7 },
+          { id: 9, emoji: '🚿', label: 'Shower', done: false, points: 7 },
+          { id: 10, emoji: '🧦', label: 'PJ', done: false, points: 7 },
+          { id: 11, emoji: '🧺', label: 'Basket away', done: false, points: 7 },
+          { id: 12, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 7 },
+          { id: 13, emoji: '🦮', label: 'Feed Molly', done: false, points: 7, hasMolly: true },
+          { id: 14, emoji: '🪝', label: 'Bag away', done: false, points: 7 },
+          { id: 15, emoji: '🍴', label: 'Set table', done: false, points: 7 },
+          { id: 16, emoji: '🍽️', label: 'Dinner', done: false, points: 7 },
+          { id: 17, emoji: '🦷', label: 'Teeth', done: false, points: 7 },
+          { id: 18, emoji: '🛌', label: 'Bed', done: false, points: 7 }
+        ]
+      }
+    },
+    tuesday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 5 },
+          { id: 2, text: 'Shower', emoji: '🚿', done: false, points: 5 },
+          { id: 3, text: 'Towel Back', emoji: '🧺', done: false, points: 5 },
+          { id: 4, text: 'Uniform', emoji: '👕', done: false, points: 5 },
+          { id: 5, text: 'Breakfast', emoji: '🍞', done: false, points: 5 },
+          { id: 6, text: 'Dishes Away', emoji: '🥣', done: false, points: 5 },
+          { id: 7, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 8, text: 'Make Bed', emoji: '🛏️', done: false, points: 5 },
+          { id: 9, text: 'Reader', emoji: '📖', done: false, points: 5 },
+          { id: 10, text: 'Pack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 11, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ],
+        evening: [
+          { id: 12, text: 'Unpack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 13, text: 'Walk Molly', emoji: '🦮', done: false, points: 5 },
+          { id: 14, text: 'Dressed', emoji: '🧦', done: false, points: 5 },
+          { id: 15, text: 'Clothes in drawer', emoji: '👕', done: false, points: 5 },
+          { id: 16, text: 'Bag away', emoji: '🪝', done: false, points: 5 },
+          { id: 17, text: 'Lunch', emoji: '🥪', done: false, points: 5 },
+          { id: 18, text: 'Basket away', emoji: '🧺', done: false, points: 5 },
+          { id: 19, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 5 },
+          { id: 20, text: 'Dinner', emoji: '🍽️', done: false, points: 5 },
+          { id: 21, text: 'Clear table', emoji: '🍴', done: false, points: 5 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 9 },
+          { id: 2, emoji: '👗', label: 'Get dressed', done: false, points: 9 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 9 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 9 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 9 },
+          { id: 6, emoji: '🎒', label: 'Pack bag', done: false, points: 9 },
+          { id: 7, emoji: '🧸', label: 'Tidy Play Room', done: false, points: 9 },
+          { id: 8, emoji: '🦷', label: 'Teeth', done: false, points: 9 }
+        ],
+        evening: [
+          { id: 9, emoji: '🎒', label: 'Unpack bag', done: false, points: 7 },
+          { id: 10, emoji: '🚿', label: 'Shower', done: false, points: 7 },
+          { id: 11, emoji: '🧦', label: 'PJ', done: false, points: 7 },
+          { id: 12, emoji: '🧺', label: 'Basket away', done: false, points: 7 },
+          { id: 13, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 7 },
+          { id: 14, emoji: '🦮', label: 'Feed Molly', done: false, points: 7, hasMolly: true },
+          { id: 15, emoji: '🪝', label: 'Bag away', done: false, points: 6 },
+          { id: 16, emoji: '🍴', label: 'Set table', done: false, points: 6 },
+          { id: 17, emoji: '🍽️', label: 'Dinner', done: false, points: 6 },
+          { id: 18, emoji: '🦷', label: 'Teeth', done: false, points: 6 },
+          { id: 19, emoji: '🛌', label: 'Bed', done: false, points: 6 }
+        ]
+      }
+    },
+    wednesday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 5 },
+          { id: 2, text: 'Shower', emoji: '🚿', done: false, points: 5 },
+          { id: 3, text: 'Towel Back', emoji: '🧺', done: false, points: 5 },
+          { id: 4, text: 'Uniform', emoji: '👕', done: false, points: 4 },
+          { id: 5, text: 'Breakfast', emoji: '🍞', done: false, points: 4 },
+          { id: 6, text: 'Dishes Away', emoji: '🥣', done: false, points: 4 },
+          { id: 7, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 8, text: 'Make Bed', emoji: '🛏️', done: false, points: 5 },
+          { id: 9, text: 'Reader', emoji: '📖', done: false, points: 4 },
+          { id: 10, text: 'Pack bag', emoji: '🎒', done: false, points: 4 },
+          { id: 11, text: 'Unpack Dishwasher', emoji: '🍴', done: false, points: 5 },
+          { id: 12, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ],
+        evening: [
+          { id: 13, text: 'Unpack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 14, text: 'Dressed', emoji: '🧦', done: false, points: 5 },
+          { id: 15, text: 'Clothes in drawer', emoji: '👕', done: false, points: 5 },
+          { id: 16, text: 'Bag away', emoji: '🪝', done: false, points: 5 },
+          { id: 17, text: 'Lunch', emoji: '🥪', done: false, points: 5 },
+          { id: 18, text: 'Basket away', emoji: '🧺', done: false, points: 5 },
+          { id: 19, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 5 },
+          { id: 20, text: 'Dinner', emoji: '🍽️', done: false, points: 5 },
+          { id: 21, text: 'Clear table', emoji: '🍴', done: false, points: 5 },
+          { id: 22, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 9 },
+          { id: 2, emoji: '👗', label: 'Get dressed', done: false, points: 9 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 9 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 9 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 9 },
+          { id: 6, emoji: '🎒', label: 'Pack bag', done: false, points: 9 },
+          { id: 7, emoji: '💨', label: 'Vacuum play room', done: false, points: 9 },
+          { id: 8, emoji: '🦷', label: 'Teeth', done: false, points: 9 }
+        ],
+        evening: [
+          { id: 9, emoji: '🎒', label: 'Unpack bag', done: false, points: 6 },
+          { id: 10, emoji: '🚿', label: 'Shower', done: false, points: 6 },
+          { id: 11, emoji: '🧦', label: 'PJ', done: false, points: 6 },
+          { id: 12, emoji: '🧺', label: 'Basket away', done: false, points: 6 },
+          { id: 13, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 6 },
+          { id: 14, emoji: '🦮', label: 'Feed Molly', done: false, points: 6, hasMolly: true },
+          { id: 15, emoji: '🥪', label: 'Make Lunch', done: false, points: 6 },
+          { id: 16, emoji: '🪝', label: 'Bag away', done: false, points: 6 },
+          { id: 17, emoji: '🍴', label: 'Set table', done: false, points: 6 },
+          { id: 18, emoji: '🍽️', label: 'Dinner', done: false, points: 6 },
+          { id: 19, emoji: '🦷', label: 'Teeth', done: false, points: 6 },
+          { id: 20, emoji: '🛌', label: 'Bed', done: false, points: 6 }
+        ]
+      }
+    },
+    thursday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 5 },
+          { id: 2, text: 'Shower', emoji: '🚿', done: false, points: 5 },
+          { id: 3, text: 'Towel Back', emoji: '🧺', done: false, points: 5 },
+          { id: 4, text: 'Uniform', emoji: '👕', done: false, points: 5 },
+          { id: 5, text: 'Breakfast', emoji: '🍞', done: false, points: 5 },
+          { id: 6, text: 'Dishes Away', emoji: '🥣', done: false, points: 5 },
+          { id: 7, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 8, text: 'Make Bed', emoji: '🛏️', done: false, points: 5 },
+          { id: 9, text: 'Reader', emoji: '📖', done: false, points: 5 },
+          { id: 10, text: 'Pack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 11, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ],
+        evening: [
+          { id: 12, text: 'Unpack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 13, text: 'Dressed', emoji: '🧦', done: false, points: 5 },
+          { id: 14, text: 'Clothes in drawer', emoji: '👕', done: false, points: 5 },
+          { id: 15, text: 'Bag away', emoji: '🪝', done: false, points: 5 },
+          { id: 16, text: 'Lunch', emoji: '🥪', done: false, points: 5 },
+          { id: 17, text: 'Basket away', emoji: '🧺', done: false, points: 5 },
+          { id: 18, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 5 },
+          { id: 19, text: 'Dinner', emoji: '🍽️', done: false, points: 5 },
+          { id: 20, text: 'Clear table', emoji: '🍴', done: false, points: 5 },
+          { id: 21, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 10 },
+          { id: 2, emoji: '👗', label: 'Get dressed', done: false, points: 10 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 10 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 10 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 10 },
+          { id: 6, emoji: '🎒', label: 'Pack bag', done: false, points: 10 },
+          { id: 7, emoji: '🦷', label: 'Teeth', done: false, points: 10 }
+        ],
+        evening: [
+          { id: 8, emoji: '🎒', label: 'Unpack bag', done: false, points: 6 },
+          { id: 9, emoji: '🚿', label: 'Shower', done: false, points: 6 },
+          { id: 10, emoji: '🧦', label: 'PJ', done: false, points: 6 },
+          { id: 11, emoji: '🧺', label: 'Basket away', done: false, points: 6 },
+          { id: 12, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 6 },
+          { id: 13, emoji: '🦮', label: 'Feed Molly', done: false, points: 6, hasMolly: true },
+          { id: 14, emoji: '🪝', label: 'Bag away', done: false, points: 6 },
+          { id: 15, emoji: '🥪', label: 'Make Lunch', done: false, points: 6 },
+          { id: 16, emoji: '🦮', label: 'Walk Molly with Daddy', done: false, points: 6 },
+          { id: 17, emoji: '🍴', label: 'Set table', done: false, points: 6 },
+          { id: 18, emoji: '🍽️', label: 'Dinner', done: false, points: 6 },
+          { id: 19, emoji: '🦷', label: 'Teeth', done: false, points: 5 },
+          { id: 20, emoji: '🛌', label: 'Bed', done: false, points: 5 }
+        ]
+      }
+    },
+    friday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 5 },
+          { id: 2, text: 'Shower', emoji: '🚿', done: false, points: 5 },
+          { id: 3, text: 'Towel Back', emoji: '🧺', done: false, points: 5 },
+          { id: 4, text: 'Uniform', emoji: '👕', done: false, points: 5 },
+          { id: 5, text: 'Breakfast', emoji: '🍞', done: false, points: 5 },
+          { id: 6, text: 'Dishes Away', emoji: '🥣', done: false, points: 5 },
+          { id: 7, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 8, text: 'Make Bed', emoji: '🛏️', done: false, points: 5 },
+          { id: 9, text: 'Reader', emoji: '📖', done: false, points: 5 },
+          { id: 10, text: 'Pack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 11, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ],
+        evening: [
+          { id: 12, text: 'Unpack bag', emoji: '🎒', done: false, points: 5 },
+          { id: 13, text: 'Dressed', emoji: '🧦', done: false, points: 5 },
+          { id: 14, text: 'Clothes in drawer', emoji: '👕', done: false, points: 5 },
+          { id: 15, text: 'Bag away', emoji: '🪝', done: false, points: 5 },
+          { id: 16, text: 'Basket away', emoji: '🧺', done: false, points: 5 },
+          { id: 17, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 5 },
+          { id: 18, text: 'Walk Molly', emoji: '🦮', done: false, points: 10 },
+          { id: 19, text: 'Dinner', emoji: '🍽️', done: false, points: 5 },
+          { id: 20, text: 'Clear table', emoji: '🍴', done: false, points: 5 },
+          { id: 21, text: 'Teeth', emoji: '🦷', done: false, points: 5 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 10 },
+          { id: 2, emoji: '👗', label: 'Get dressed', done: false, points: 10 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 10 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 10 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 10 },
+          { id: 6, emoji: '🎒', label: 'Pack bag', done: false, points: 10 },
+          { id: 7, emoji: '🦷', label: 'Teeth', done: false, points: 10 }
+        ],
+        evening: [
+          { id: 8, emoji: '🎒', label: 'Unpack bag', done: false, points: 7 },
+          { id: 9, emoji: '🚿', label: 'Shower', done: false, points: 7 },
+          { id: 10, emoji: '🧦', label: 'PJ', done: false, points: 7 },
+          { id: 11, emoji: '🧺', label: 'Basket away', done: false, points: 7 },
+          { id: 12, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 7 },
+          { id: 13, emoji: '🦮', label: 'Feed Molly', done: false, points: 7, hasMolly: true },
+          { id: 14, emoji: '🪝', label: 'Bag away', done: false, points: 7 },
+          { id: 15, emoji: '🍴', label: 'Set table', done: false, points: 7 },
+          { id: 16, emoji: '🍽️', label: 'Dinner', done: false, points: 7 },
+          { id: 17, emoji: '🦷', label: 'Teeth', done: false, points: 7 },
+          { id: 18, emoji: '🛌', label: 'Bed', done: false, points: 7 }
+        ]
+      }
+    },
+    saturday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 7 },
+          { id: 2, text: 'Bathers', emoji: '🩳', done: false, points: 7 },
+          { id: 3, text: 'Breakfast', emoji: '🍞', done: false, points: 7 },
+          { id: 4, text: 'Dishes Away', emoji: '🥣', done: false, points: 7 },
+          { id: 5, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 6, text: 'Make Bed', emoji: '🛏️', done: false, points: 7 },
+          { id: 7, text: 'Reader', emoji: '📖', done: false, points: 7 },
+          { id: 8, text: 'Teeth', emoji: '🦷', done: false, points: 8 }
+        ],
+        evening: [
+          { id: 9, text: 'Shower', emoji: '🚿', done: false, points: 8 },
+          { id: 10, text: 'Towel Back', emoji: '🧺', done: false, points: 8 },
+          { id: 11, text: 'Basket away', emoji: '🧺', done: false, points: 8 },
+          { id: 12, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 8 },
+          { id: 13, text: 'Dinner', emoji: '🍽️', done: false, points: 8 },
+          { id: 14, text: 'Clear table', emoji: '🍴', done: false, points: 8 },
+          { id: 15, text: 'Teeth', emoji: '🦷', done: false, points: 12 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 10 },
+          { id: 2, emoji: '🩱', label: 'Bathers', done: false, points: 10 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 10 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 10 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 10 },
+          { id: 6, emoji: '🦷', label: 'Teeth', done: false, points: 10 }
+        ],
+        evening: [
+          { id: 7, emoji: '🚿', label: 'Shower', done: false, points: 8 },
+          { id: 8, emoji: '🧦', label: 'PJ', done: false, points: 8 },
+          { id: 9, emoji: '🧺', label: 'Basket away', done: false, points: 8 },
+          { id: 10, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 8 },
+          { id: 11, emoji: '🦮', label: 'Feed Molly', done: false, points: 8, hasMolly: true },
+          { id: 12, emoji: '🍴', label: 'Set table', done: false, points: 8 },
+          { id: 13, emoji: '🍽️', label: 'Dinner', done: false, points: 8 },
+          { id: 14, emoji: '🦷', label: 'Teeth', done: false, points: 8 },
+          { id: 15, emoji: '🛌', label: 'Bed', done: false, points: 8 }
+        ]
+      }
+    },
+    sunday: {
+      henry: {
+        morning: [
+          { id: 1, text: 'Wake Up', emoji: '☀️', done: false, points: 6 },
+          { id: 2, text: 'Shower', emoji: '🚿', done: false, points: 6 },
+          { id: 3, text: 'Towel Back', emoji: '🧺', done: false, points: 6 },
+          { id: 4, text: 'Get Dressed', emoji: '👕', done: false, points: 6 },
+          { id: 5, text: 'Breakfast', emoji: '🍞', done: false, points: 6 },
+          { id: 6, text: 'Dishes Away', emoji: '🥣', done: false, points: 6 },
+          { id: 7, text: 'Feed Molly', emoji: '🦮', done: false, points: 10, hasMolly: true },
+          { id: 8, text: 'Make Bed', emoji: '🛏️', done: false, points: 6 },
+          { id: 9, text: 'Reader', emoji: '📖', done: false, points: 6 },
+          { id: 10, text: 'Teeth', emoji: '🦷', done: false, points: 6 }
+        ],
+        evening: [
+          { id: 11, text: 'Dressed', emoji: '🧦', done: false, points: 6 },
+          { id: 12, text: 'Clothes in drawer', emoji: '👕', done: false, points: 6 },
+          { id: 13, text: 'Lunch', emoji: '🥪', done: false, points: 6 },
+          { id: 14, text: 'Basket away', emoji: '🧺', done: false, points: 6 },
+          { id: 15, text: 'Tidy bedroom', emoji: '🧸', done: false, points: 6 },
+          { id: 16, text: 'Dinner', emoji: '🍽️', done: false, points: 6 },
+          { id: 17, text: 'Clear table', emoji: '🍴', done: false, points: 6 },
+          { id: 18, text: 'Teeth', emoji: '🦷', done: false, points: 6 }
+        ]
+      },
+      sophie: {
+        morning: [
+          { id: 1, emoji: '☀️', label: 'Wake up', done: false, points: 10 },
+          { id: 2, emoji: '👗', label: 'Get dressed', done: false, points: 10 },
+          { id: 3, emoji: '🧺', label: 'Clothes away', done: false, points: 10 },
+          { id: 4, emoji: '🛏️', label: 'Make bed', done: false, points: 10 },
+          { id: 5, emoji: '🍞', label: 'Breakfast', done: false, points: 10 },
+          { id: 6, emoji: '🦷', label: 'Teeth', done: false, points: 10 }
+        ],
+        evening: [
+          { id: 7, emoji: '🚿', label: 'Shower', done: false, points: 7 },
+          { id: 8, emoji: '🧦', label: 'PJ', done: false, points: 7 },
+          { id: 9, emoji: '🧺', label: 'Basket away', done: false, points: 7 },
+          { id: 10, emoji: '🧸', label: 'Tidy bedroom', done: false, points: 7 },
+          { id: 11, emoji: '🦮', label: 'Feed Molly', done: false, points: 7, hasMolly: true },
+          { id: 12, emoji: '🍴', label: 'Set table', done: false, points: 7 },
+          { id: 13, emoji: '🍽️', label: 'Dinner', done: false, points: 7 },
+          { id: 14, emoji: '🦷', label: 'Teeth', done: false, points: 7 },
+          { id: 15, emoji: '🛌', label: 'Bed', done: false, points: 8 }
+        ]
+      }
+    }
+  }
+};
+
+// Time helpers
+function getHour() {
+  return new Date().getHours();
+}
+
+function getMinute() {
+  return new Date().getMinutes();
+}
+
+function isAfternoon() {
+  return getHour() >= 15;
+}
+
+function isMorning() {
+  return getHour() < 12;
+}
+
+function getTimeUntil(targetTime) {
+  if (!targetTime) return null;
+  const [hours, minutes] = targetTime.split(':').map(Number);
+  const now = new Date();
+  const target = new Date();
+  target.setHours(hours, minutes, 0, 0);
+  const diff = target - now;
+  return Math.floor(diff / 60000);
+}
+
+function getCountdownColor(minutes) {
+  if (!minutes) return '';
+  if (minutes < 0) return 'countdown-past';
+  if (minutes > 15) return 'countdown-green text-green';
+  return 'countdown-red text-red';
+}
+
+function showFirework(x, y) {
+  const emojis = ['✨', '🎉', '⭐', '💫', '🌟'];
+  const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+  const fw = document.createElement('div');
+  fw.className = 'firework';
+  fw.textContent = emoji;
+  fw.style.left = x + 'px';
+  fw.style.top = y + 'px';
+  document.body.appendChild(fw);
+  setTimeout(() => fw.remove(), 800);
+}
+
+function getProgress(person) {
+  const tasks = state.tasks[state.currentDay][person];
+  const afternoon = isAfternoon();
+  let allTasks = afternoon ? [...tasks.morning, ...tasks.evening] : tasks.morning;
+  const completed = allTasks.filter(t => t.done).length;
+  return {
+    completed,
+    total: allTasks.length,
+    percent: allTasks.length ? (completed / allTasks.length * 100) : 0
+  };
+}
+
+function toggleTask(person, period, taskId, event) {
+  const tasks = state.tasks[state.currentDay][person];
+  const task = tasks[period].find(t => t.id === taskId);
+  
+  if (task) {
+    if (task.hasMolly && !task.done) {
+      state.showMollyModal = true;
+      state.mollyPerson = person;
+      state.mollyPeriod = period;
+      state.mollyTaskId = taskId;
+      render();
+      return;
+    }
+    
+    task.done = !task.done;
+    if (task.done) {
+      state.points[person] += task.points;
+      if (event) showFirework(event.clientX, event.clientY);
+    } else {
+      state.points[person] -= task.points;
+    }
+    render();
+  }
+}
+
+function toggleMollyItem(item) {
+  state.mollyChecklist[item] = !state.mollyChecklist[item];
+  
+  const period = state.mollyPeriod;
+  const isMorning = period === 'morning';
+  
+  // Check if all required items are done
+  let allDone = false;
+  if (isMorning) {
+    // Morning: only dry food, water, medication needed
+    allDone = state.mollyChecklist.dryFood && state.mollyChecklist.water && state.mollyChecklist.medication;
+  } else {
+    // Evening: all 4 items needed
+    allDone = state.mollyChecklist.dryFood && state.mollyChecklist.wetFood && state.mollyChecklist.water && state.mollyChecklist.medication;
+  }
+  
+  if (allDone) {
+    const task = state.tasks[state.currentDay][state.mollyPerson][state.mollyPeriod].find(t => t.id === state.mollyTaskId);
+    if (task && !task.done) {
+      task.done = true;
+      state.points[state.mollyPerson] += task.points;
+      setTimeout(() => {
+        state.showMollyModal = false;
+        state.mollyChecklist = { dryFood: false, wetFood: false, water: false, medication: false };
+        render();
+      }, 500);
+    }
+  }
+  render();
+}
+
+function closeMollyModal() {
+  state.showMollyModal = false;
+  state.mollyChecklist = { dryFood: false, wetFood: false, water: false, medication: false };
+  render();
+}
+
+function renderDashboard() {
+  const now = new Date();
+  const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const dayName = dayNames[now.getDay()];
+  const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  
+  const henryProg = getProgress('henry');
+  const sophieProg = getProgress('sophie');
+  
+  return `
+    <div class="min-h-screen bg-gradient-purple p-4">
+      <div class="max-w-4xl">
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div class="text-center">
+            <div class="text-6xl font-bold mb-2" style="color: #9333ea;">
+              ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+            </div>
+            <div class="text-gray-600 text-3xl mb-4">${dayNames[dayKeys.indexOf(state.currentDay)]}</div>
+            
+            <div class="day-selector mt-4">
+              ${dayKeys.map((day, idx) => `
+                <button onclick="changeDay('${day}')" class="day-btn ${state.currentDay === day ? 'active' : ''}">
+                  ${dayNames[idx].substring(0, 3)}
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6">
+          <button onclick="setView('henry')" class="rounded-3xl shadow-lg p-6 card-hover transition-all cursor-pointer" style="border: none; background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);">
+            <div class="flex items-center gap-3 mb-4">
+              <div style="width: 6rem; height: 6rem; background: #22c55e; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">👦</div>
+              <div class="text-left">
+                <h2 class="text-4xl font-bold text-gray-800">Henry</h2>
+                <div class="points-badge mt-2">⭐ ${state.points.henry}</div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-gray-800 mb-2 text-xl">
+                <span>Progress</span>
+                <span class="font-bold">${henryProg.completed}/${henryProg.total}</span>
+              </div>
+              <div style="width: 100%; background: white; border-radius: 9999px; height: 2rem; overflow: hidden;">
+                <div class="progress-bar progress-green" style="width: ${henryProg.percent}%"></div>
+              </div>
+            </div>
+          </button>
+
+          <button onclick="setView('sophie')" class="rounded-3xl shadow-lg p-6 card-hover transition-all cursor-pointer" style="border: none; background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);">
+            <div class="flex items-center gap-3 mb-4">
+              <div style="width: 6rem; height: 6rem; background: #a855f7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem;">👧</div>
+              <div class="text-left">
+                <h2 class="text-4xl font-bold text-gray-800">Sophie</h2>
+                <div class="points-badge mt-2">⭐ ${state.points.sophie}</div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-gray-800 mb-2 text-xl">
+                <span>Progress</span>
+                <span class="font-bold">${sophieProg.completed}/${sophieProg.total}</span>
+              </div>
+              <div style="width: 100%; background: white; border-radius: 9999px; height: 2rem; overflow: hidden;">
+                <div class="progress-bar progress-purple" style="width: ${sophieProg.percent}%"></div>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHenry() {
+  const tasks = state.tasks[state.currentDay].henry;
+  const schedule = state.schedule[state.currentDay];
+  const leaveTime = schedule.henry;
+  const timeUntil = getTimeUntil(leaveTime);
+  const bedtime = getTimeUntil('20:00');
+  const progress = getProgress('henry');
+  const afternoon = isAfternoon();
+  const morning = isMorning();
+  
+  const morningAllDone = tasks.morning.every(t => t.done);
+  const eveningAllDone = tasks.evening.every(t => t.done);
+  
+  const showChoices = morningAllDone && timeUntil && timeUntil >= 15 && !afternoon;
+  const countdownMinutes = timeUntil || bedtime;
+  const countdownLabel = timeUntil ? 'Time to Leave' : bedtime ? 'Bedtime' : '';
+  const countdownColor = getCountdownColor(countdownMinutes);
+  
+  const henryChoices = ['📖 Read a book', '🧱 Play with Lego', '✏️ Drawing', '🧲 Magnets'];
+  
+  return `
+    <div class="min-h-screen p-4" style="background: linear-gradient(135deg, #dcfce7 0%, #dbeafe 100%);">
+      <div class="max-w-4xl">
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div class="flex items-center justify-between">
+            <button onclick="setView('dashboard')" class="btn" style="background: #22c55e; color: white;">← Back</button>
+            <div class="text-center">
+              <div class="text-6xl font-bold mb-2" style="color: #16a34a;">
+                ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+              </div>
+              <h1 class="text-4xl font-bold mb-2">👦 Henry's Tasks</h1>
+              <div class="points-badge">⭐ ${state.points.henry} points</div>
+            </div>
+            <div style="width: 6rem;"></div>
+          </div>
+        </div>
+
+        ${countdownMinutes && countdownMinutes <= 120 && !showChoices ? `
+          <div class="rounded-2xl shadow-lg p-6 mb-6 ${countdownColor}">
+            <div class="text-center">
+              <div class="text-6xl mb-3">${timeUntil ? '🚗' : '🌙'}</div>
+              <div class="text-4xl font-bold mb-2">${countdownLabel}</div>
+              <div class="text-8xl font-bold">${countdownMinutes < 0 ? 'GO!' : countdownMinutes + ' min'}</div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${showChoices ? `
+          <div class="bg-white rounded-3xl shadow-lg p-8 mb-6">
+            <div class="text-center mb-6">
+              <div class="text-7xl mb-4">🎉</div>
+              <h2 class="text-5xl font-bold mb-4" style="color: #16a34a;">All Done Early!</h2>
+              <p class="text-3xl font-bold text-gray-800">Choose what to do:</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              ${henryChoices.map(choice => `
+                <div class="choice-btn">${choice}</div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-3xl font-bold">Progress</span>
+            <span class="text-4xl font-bold" style="color: #16a34a;">${progress.completed}/${progress.total}</span>
+          </div>
+          <div style="width: 100%; background: #e5e7eb; border-radius: 9999px; height: 2rem; overflow: hidden;">
+            <div class="progress-bar progress-green" style="width: ${progress.percent}%"></div>
+          </div>
+        </div>
+
+        ${morning || (!morning && !morningAllDone) ? `
+          <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-4xl font-bold mb-4">☀️ Morning Tasks</h2>
+            ${morningAllDone && !morning ? `
+              <div class="p-8 text-center rounded-xl" style="background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);">
+                <div class="text-7xl mb-4">🌟</div>
+                <p class="text-5xl font-bold text-white">Morning Complete!</p>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${tasks.morning.map(task => `
+                  <button onclick="toggleTask('henry', 'morning', ${task.id}, event)" class="task-btn ${task.done ? 'done' : !morning ? 'overdue' : ''}">
+                    <div class="text-5xl">${task.emoji}</div>
+                    <span class="flex-1 text-left text-2xl font-bold">${task.text}</span>
+                    <span class="text-xl font-bold">+${task.points}</span>
+                    <div class="text-5xl">${task.done ? '✓' : '○'}</div>
+                  </button>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        ` : ''}
+
+        ${afternoon ? `
+          <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-4xl font-bold mb-4">🌙 Evening Tasks</h2>
+            ${eveningAllDone ? `
+              <div class="p-8 text-center rounded-xl" style="background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);">
+                <div class="text-7xl mb-4">🌟</div>
+                <p class="text-5xl font-bold text-white">Evening Complete!</p>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${tasks.evening.map(task => `
+                  <button onclick="toggleTask('henry', 'evening', ${task.id}, event)" class="task-btn ${task.done ? 'done' : ''}">
+                    <div class="text-5xl">${task.emoji}</div>
+                    <span class="flex-1 text-left text-2xl font-bold">${task.text}</span>
+                    <span class="text-xl font-bold">+${task.points}</span>
+                    <div class="text-5xl">${task.done ? '✓' : '○'}</div>
+                  </button>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        ` : ''}
+
+        ${morningAllDone && eveningAllDone ? `
+          <div class="mt-6 rounded-2xl shadow-lg p-8 text-center" style="background: linear-gradient(90deg, #fbbf24 0%, #f97316 50%, #ef4444 100%);">
+            <p class="text-8xl mb-4">🏆🎉✨</p>
+            <p class="text-6xl font-bold text-white mb-2">PERFECT DAY!</p>
+            <p class="text-4xl font-bold text-white">You did EVERYTHING! 🌟</p>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderSophie() {
+  const tasks = state.tasks[state.currentDay].sophie;
+  const schedule = state.schedule[state.currentDay];
+  const leaveTime = schedule.sophie;
+  const timeUntil = getTimeUntil(leaveTime);
+  const bedtime = getTimeUntil('20:00');
+  const progress = getProgress('sophie');
+  const afternoon = isAfternoon();
+  const morning = isMorning();
+  
+  const morningAllDone = tasks.morning.every(t => t.done);
+  const eveningAllDone = tasks.evening.every(t => t.done);
+  
+  const showChoices = morningAllDone && timeUntil && timeUntil >= 15 && !afternoon;
+  const countdownMinutes = timeUntil || bedtime;
+  const countdownLabel = timeUntil ? 'Time to Leave' : bedtime ? 'Bedtime' : '';
+  const countdownColor = getCountdownColor(countdownMinutes);
+  
+  const sophieChoices = ['👗 Barbies', '✏️ Drawing', '🧩 Puzzles', '🧲 Magnets'];
+  
+  return `
+    <div class="min-h-screen p-4" style="background: linear-gradient(135deg, #fae8ff 0%, #fce7f3 100%);">
+      <div class="max-w-5xl">
+        <div class="bg-white rounded-3xl shadow-lg p-6 mb-6">
+          <div class="flex items-center justify-between">
+            <button onclick="setView('dashboard')" class="btn" style="background: #a855f7; color: white; font-size: 1.5rem; padding: 1rem 2rem;">← Back</button>
+            <div class="text-center">
+              <div class="text-7xl font-bold mb-2" style="color: #9333ea;">
+                ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}
+              </div>
+              <h1 class="text-5xl font-bold mb-2">👧 Sophie's Tasks</h1>
+              <div class="points-badge" style="font-size: 2rem;">⭐ ${state.points.sophie} points</div>
+            </div>
+            <div style="width: 8rem;"></div>
+          </div>
+        </div>
+
+        ${countdownMinutes && countdownMinutes <= 120 && !showChoices ? `
+          <div class="rounded-3xl shadow-lg p-8 mb-6 ${countdownColor}">
+            <div class="text-center">
+              <div class="text-8xl mb-4">${timeUntil ? '🚗' : '🌙'}</div>
+              <div class="text-5xl font-bold mb-3">${countdownLabel}</div>
+              <div style="font-size: 10rem; font-weight: 700;">${countdownMinutes < 0 ? 'GO!' : countdownMinutes}</div>
+              ${countdownMinutes >= 0 ? '<div class="text-5xl font-bold mt-2">min</div>' : ''}
+            </div>
+          </div>
+        ` : ''}
+
+        ${showChoices ? `
+          <div class="bg-white rounded-3xl shadow-lg p-8 mb-6">
+            <div class="text-center mb-6">
+              <div class="text-8xl mb-4">🎉</div>
+              <h2 class="text-6xl font-bold mb-4" style="color: #9333ea;">All Done!</h2>
+              <p class="text-4xl font-bold text-gray-800">Choose what to do:</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              ${sophieChoices.map(choice => `
+                <div class="choice-btn" style="font-size: 2rem; padding: 2.5rem;">${choice}</div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <div class="bg-white rounded-3xl shadow-lg p-8 mb-6">
+          <div class="flex justify-between items-center mb-4">
+            <span class="text-4xl font-bold">Done:</span>
+            <span class="text-5xl font-bold" style="color: #9333ea;">${progress.completed}/${progress.total}</span>
+          </div>
+          <div style="width: 100%; background: #e5e7eb; border-radius: 9999px; height: 3rem; overflow: hidden;">
+            <div class="progress-bar progress-purple" style="width: ${progress.percent}%"></div>
+          </div>
+        </div>
+
+        ${morning || (!morning && !morningAllDone) ? `
+          <div class="bg-white rounded-3xl shadow-lg p-8 mb-6">
+            <h2 class="text-5xl font-bold text-center mb-6" style="color: #f97316;">☀️ Morning</h2>
+            ${morningAllDone && !morning ? `
+              <div class="p-12 text-center rounded-2xl" style="background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);">
+                <div class="text-8xl mb-6">🌟</div>
+                <p class="text-6xl font-bold text-white">Morning Done!</p>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${tasks.morning.map(task => `
+                  <button onclick="toggleTask('sophie', 'morning', ${task.id}, event)" class="task-btn ${task.done ? 'done' : !morning ? 'overdue' : ''}">
+                    <div class="text-5xl">${task.emoji}</div>
+                    <span class="flex-1 text-left text-2xl font-bold">${task.label}</span>
+                    <span class="text-xl font-bold">+${task.points}</span>
+                    <div class="text-5xl">${task.done ? '✓' : '○'}</div>
+                  </button>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        ` : ''}
+
+        ${afternoon ? `
+          <div class="bg-white rounded-3xl shadow-lg p-8">
+            <h2 class="text-5xl font-bold text-center mb-6" style="color: #6366f1;">🌙 Night</h2>
+            ${eveningAllDone ? `
+              <div class="p-12 text-center rounded-2xl" style="background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);">
+                <div class="text-8xl mb-6">🌟</div>
+                <p class="text-6xl font-bold text-white">Night Done!</p>
+              </div>
+            ` : `
+              <div class="space-y-3">
+                ${tasks.evening.map(task => `
+                  <button onclick="toggleTask('sophie', 'evening', ${task.id}, event)" class="task-btn ${task.done ? 'done' : ''}">
+                    <div class="text-5xl">${task.emoji}</div>
+                    <span class="flex-1 text-left text-2xl font-bold">${task.label}</span>
+                    <span class="text-xl font-bold">+${task.points}</span>
+                    <div class="text-5xl">${task.done ? '✓' : '○'}</div>
+                  </button>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        ` : ''}
+
+        ${morningAllDone && eveningAllDone ? `
+          <div class="mt-6 rounded-3xl shadow-lg p-12 text-center" style="background: linear-gradient(90deg, #ec4899 0%, #a855f7 50%, #ec4899 100%);">
+            <p class="text-8xl mb-6">🏆✨👑</p>
+            <p class="text-7xl font-bold text-white mb-4">PERFECT!</p>
+            <p class="text-5xl font-bold text-white">Sophie did EVERYTHING!</p>
+            <p class="text-7xl mt-4">🎉🌟🎊</p>
+          </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderMollyModal() {
+  if (!state.showMollyModal) return '';
+  
+  const period = state.mollyPeriod;
+  const isMorning = period === 'morning';
+  
+  // Check completion based on time of day
+  let allDone = false;
+  if (isMorning) {
+    allDone = state.mollyChecklist.dryFood && state.mollyChecklist.water && state.mollyChecklist.medication;
+  } else {
+    allDone = state.mollyChecklist.dryFood && state.mollyChecklist.wetFood && state.mollyChecklist.water && state.mollyChecklist.medication;
+  }
+  
+  return `
+    <div class="modal-overlay" onclick="if(event.target === this) closeMollyModal()">
+      <div class="modal-content">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-4xl font-bold" style="color: #16a34a;">🦮 Feed Molly</h2>
+          <button onclick="closeMollyModal()" class="text-5xl cursor-pointer" style="border: none; background: none;">&times;</button>
+        </div>
+        
+        ${allDone ? `
+          <div class="p-8 text-center rounded-xl mb-4" style="background: linear-gradient(135deg, #4ade80 0%, #10b981 100%);">
+            <div class="text-7xl mb-4">🌟</div>
+            <p class="text-4xl font-bold text-white">Molly Fed!</p>
+          </div>
+        ` : ''}
+        
+        <div class="space-y-3">
+          <button onclick="toggleMollyItem('dryFood')" class="task-btn ${state.mollyChecklist.dryFood ? 'done' : ''}">
+            <span class="flex-1 text-left text-xl font-bold">
+              ${isMorning ? '🍖 Dry food (312-375g) + warm water' : '🍖 Dry food (190g)'}
+            </span>
+            <div class="text-5xl">${state.mollyChecklist.dryFood ? '✓' : '○'}</div>
+          </button>
+          
+          ${!isMorning ? `
+            <button onclick="toggleMollyItem('wetFood')" class="task-btn ${state.mollyChecklist.wetFood ? 'done' : ''}">
+              <span class="flex-1 text-left text-xl font-bold">🥫 Wet food (1 pouch)</span>
+              <div class="text-5xl">${state.mollyChecklist.wetFood ? '✓' : '○'}</div>
+            </button>
+          ` : ''}
+          
+          <button onclick="toggleMollyItem('water')" class="task-btn ${state.mollyChecklist.water ? 'done' : ''}">
+            <span class="flex-1 text-left text-xl font-bold">💧 Fresh water</span>
+            <div class="text-5xl">${state.mollyChecklist.water ? '✓' : '○'}</div>
+          </button>
+          
+          <button onclick="toggleMollyItem('medication')" class="task-btn ${state.mollyChecklist.medication ? 'done' : ''}">
+            <span class="flex-1 text-left text-xl font-bold">💊 Ask Mummy about medication</span>
+            <div class="text-5xl">${state.mollyChecklist.medication ? '✓' : '○'}</div>
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function render() {
+  let html = '';
+  if (state.view === 'dashboard') html = renderDashboard();
+  else if (state.view === 'henry') html = renderHenry();
+  else if (state.view === 'sophie') html = renderSophie();
+  
+  document.getElementById('app').innerHTML = html;
+  document.getElementById('modal-root').innerHTML = renderMollyModal();
+}
+
+function setView(view) {
+  state.view = view;
+  render();
+}
+
+function changeDay(day) {
+  state.currentDay = day;
+  render();
+}
+
+render();
+setInterval(render, 1000);
+</script>
+</body>
+</html>
